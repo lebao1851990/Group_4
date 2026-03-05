@@ -21,14 +21,26 @@ public class Monster {
         this.attack = attack;
     }
 
-    public int getId() { return id; }
-    public String getName() { return name; }
-    public int getHp() { return hp; }
-    public int getAttack() { return attack; }
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public int getAttack() {
+        return attack;
+    }
 
     public void takeDamage(int dmg) {
         hp -= dmg;
-        if (hp < 0) hp = 0;
+        if (hp < 0)
+            hp = 0;
     }
 
     public boolean isAlive() {
@@ -38,5 +50,15 @@ public class Monster {
     @Override
     public String toString() {
         return "Monster{" + id + "-" + name + ", hp=" + hp + ", atk=" + attack + "}";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        Monster monster = (Monster) obj;
+        return id == monster.id;
     }
 }
