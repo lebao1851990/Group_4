@@ -1,0 +1,146 @@
+/* Custom Glow - Viền Neon */
+.glow-thuy, .glow-blue {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2);
+  border: 1px solid #3b82f6 !important;
+}
+
+.glow-hoa, .glow-red {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.5), inset 0 0 15px rgba(239, 68, 68, 0.3);
+  border: 1px solid #ef4444 !important;
+}
+
+.glow-moc, .glow-green {
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.4), inset 0 0 10px rgba(74, 222, 128, 0.2);
+  border: 1px solid #4ade80 !important;
+}
+
+.glow-tho, .glow-yellow {
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2);
+  border: 1px solid #fbbf24 !important;
+}
+
+.glow-kim, .glow-gray {
+  box-shadow: 0 0 10px rgba(203, 213, 225, 0.4), inset 0 0 10px rgba(203, 213, 225, 0.2);
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* Custom Scrollbar tàng hình mượt mà */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.2); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(255,255,255,0.4); }
+
+/* ========== COMBAT MOVE ANIMATIONS ========== */
+
+/* Player lunge: hop FORWARD (right) toward monster */
+@keyframes playerLunge {
+  0%   { transform: translateX(0)    translateY(0)   scale(1);    }
+  28%  { transform: translateX(130px) translateY(-14px) scale(1.09); }
+  52%  { transform: translateX(138px) translateY(0)   scale(1.05); }
+  100% { transform: translateX(0)    translateY(0)   scale(1);    }
+}
+
+/* Monster lunge: charge LEFT toward player */
+@keyframes monsterLunge {
+  0%   { transform: translateX(0)     translateY(0)    scale(1);    }
+  28%  { transform: translateX(-140px) translateY(-14px) scale(1.09); }
+  52%  { transform: translateX(-145px) translateY(0)    scale(1.05); }
+  100% { transform: translateX(0)     translateY(0)    scale(1);    }
+}
+
+/* Player hit shake */
+@keyframes hitShake {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(-13px) rotate(-2deg); }
+  30%  { transform: translateX(13px)  rotate(2deg);  }
+  50%  { transform: translateX(-8px)  rotate(-1deg); }
+  70%  { transform: translateX(6px);  }
+  100% { transform: translateX(0);   }
+}
+
+/* Monster hit shake */
+@keyframes monsterHitShake {
+  0%   { transform: translateX(0);   }
+  15%  { transform: translateX(15px)  rotate(2deg);  }
+  30%  { transform: translateX(-15px) rotate(-2deg); }
+  50%  { transform: translateX(9px);  }
+  70%  { transform: translateX(-5px); }
+  100% { transform: translateX(0);   }
+}
+
+/* Damage number float */
+@keyframes damageFloat {
+  0%   { opacity: 1;   transform: translateY(0)    scale(1);   }
+  20%  { opacity: 1;   transform: translateY(-22px) scale(1.35);}
+  70%  { opacity: 0.8; transform: translateY(-58px) scale(1.1); }
+  100% { opacity: 0;   transform: translateY(-85px) scale(0.8); }
+}
+
+/* Screen flash */
+@keyframes screenFlash {
+  0%   { opacity: 0;    }
+  15%  { opacity: 0.45; }
+  100% { opacity: 0;    }
+}
+
+/* ========== ELEMENT EFFECT PARTICLES ========== */
+
+/* 🔥 FIRE – flames rising up */
+@keyframes fireRise {
+  0%   { opacity: 0;   transform: translateY(0)    scaleX(1)   rotate(0deg);   }
+  15%  { opacity: 1;                                                             }
+  60%  { opacity: 0.7; transform: translateY(-65px) scaleX(0.75) rotate(8deg);  }
+  100% { opacity: 0;   transform: translateY(-105px) scaleX(0.3) rotate(-5deg); }
+}
+
+/* 💧 WATER – droplets flying outward */
+@keyframes waterDropFly {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1);   }
+  80%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(var(--tx, 60px), var(--ty, -40px)) scale(0.4); }
+}
+
+/* 💧 WATER ripple ring */
+@keyframes waterRipple {
+  0%   { opacity: 0.85; transform: scale(0.1); }
+  100% { opacity: 0;    transform: scale(1);   }
+}
+
+/* 🍃 LEAF – spinning leaves fly outward */
+@keyframes leafFly {
+  0%   { opacity: 1;   transform: translate(0,0) rotate(0deg)   scale(1);   }
+  100% { opacity: 0;   transform: translate(var(--tx,70px), var(--ty,-50px)) rotate(540deg) scale(0.3); }
+}
+
+/* ⚡ SPARK/KIM – electric lines shoot outward */
+@keyframes sparkRay {
+  0%   { opacity: 1;   transform: rotate(var(--angle,0deg)) scaleX(0);  transform-origin: left center; }
+  45%  { opacity: 1;   transform: rotate(var(--angle,0deg)) scaleX(1);  transform-origin: left center; }
+  100% { opacity: 0;   transform: rotate(var(--angle,0deg)) scaleX(1.4); transform-origin: left center; }
+}
+
+/* 🪨 ROCK/THO – chunks burst outward then fall */
+@keyframes rockBurst {
+  0%   { opacity: 1;   transform: translate(0, 0) rotate(0deg)   scale(1);   }
+  50%  { opacity: 1;   transform: translate(var(--tx,50px), var(--ty,-30px)) rotate(200deg) scale(0.9); }
+  100% { opacity: 0;   transform: translate(var(--tx,50px), calc(var(--ty,0px) + 40px)) rotate(380deg) scale(0.4); }
+}
+
+/* 💥 Impact shockwave ring (shared by all) */
+@keyframes impactRing {
+  0%   { opacity: 0.9; transform: translate(-50%, -50%) scale(0.1); }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(1);   }
+}
+
+/* ✨ Ultimate energy pulse */
+@keyframes ultimatePulse {
+  0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.2); }
+  35%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1);   }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(2.2); }
+}
+
+/* ========== ANIMATION CLASSES ========== */
+.anim-player-lunge  { animation: playerLunge    0.72s ease-in-out forwards !important; }
+.anim-player-shake  { animation: hitShake        0.5s  ease-in-out forwards !important; }
+.anim-monster-lunge { animation: monsterLunge    0.72s ease-in-out forwards !important; }
+.anim-monster-shake { animation: monsterHitShake 0.5s  ease-in-out forwards !important; }

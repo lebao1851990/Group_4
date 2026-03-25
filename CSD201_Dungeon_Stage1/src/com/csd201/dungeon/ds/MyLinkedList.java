@@ -1,12 +1,14 @@
 package com.csd201.dungeon.ds;
 
-import java.util.function.Predicate;
-
 public class MyLinkedList<T> {
     private Node<T> head;
 
     public MyLinkedList() {
         head = null;
+    }
+
+    public Node<T> getHead() {
+        return head;
     }
 
     public void add(T data) {
@@ -22,10 +24,10 @@ public class MyLinkedList<T> {
         }
     }
 
-    public T search(Predicate<T> condition) {
+    public T search(T target) {
         Node<T> cur = head;
         while (cur != null) {
-            if (condition.test(cur.data)) {
+            if (cur.data.equals(target)) {
                 return cur.data;
             }
             cur = cur.next;
@@ -33,10 +35,11 @@ public class MyLinkedList<T> {
         return null;
     }
 
-    public T remove(Predicate<T> condition) {
-        if (head == null) return null;
+    public T remove(T target) {
+        if (head == null)
+            return null;
 
-        if (condition.test(head.data)) {
+        if (head.data.equals(target)) {
             T data = head.data;
             head = head.next;
             return data;
@@ -46,7 +49,7 @@ public class MyLinkedList<T> {
         Node<T> cur = head.next;
 
         while (cur != null) {
-            if (condition.test(cur.data)) {
+            if (cur.data.equals(target)) {
                 prev.next = cur.next;
                 return cur.data;
             }

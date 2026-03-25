@@ -9,11 +9,26 @@ public class Item {
         this.name = name;
     }
 
-    public int getId() { return id; }
-    public String getName() { return name; }
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
 
     @Override
     public String toString() {
         return id + " - " + name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        Item item = (Item) obj;
+        return id == item.id;
     }
 }
