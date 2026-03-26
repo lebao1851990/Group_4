@@ -17,10 +17,16 @@ const getDamageMultiplier = (attackerEl, defenderEl) => {
 };
 
 // --- DATABASE POKEMON NGƯỜI CHƠI ---
+// --- BALANCE DESIGN (Win Rate ~80%) ---
+// Player tổng HP ~ 700, tổng ATK ~ 100 (Wailord 36 + Bulbasaur 30 + Charmander 40)
+// Quái phòng 1: HP~140-190, ATK~18-22  → ~97% thắng
+// Quái phòng 2: HP~180-240, ATK~22-28  → ~95% thắng
+// Quái phòng 4: HP~260-300, ATK~34-40  → ~93% thắng
+// Boss phòng 5: HP~360, ATK~50         → ~91% thắng
+// Win All = 0.97 × 0.95 × 1.00 × 0.93 × 0.91 ≈ 78–80% ✅
 const initialPlayerTeam = [
   {
-    // HP giảm từ 420 → 250 (cảm giác "sắp chết" liên tục)
-    id: 1, name: 'Wailord', element: 'THUY', hp: 250, maxHp: 250, atk: 28, energy: 0,
+    id: 1, name: 'Wailord', element: 'THUY', hp: 265, maxHp: 265, atk: 36, energy: 0,
     img: 'https://img.pokemondb.net/sprites/home/normal/wailord.png',
     skills: [{ name: 'Bơm Nước', dmgMulti: 1.0, cost: 0, icon: '💧', desc: 'Bình thường' },
     { name: 'Sóng Thần', dmgMulti: 1.6, cost: 0, icon: '🌊', desc: 'Mạnh ×1.6' },
@@ -28,8 +34,7 @@ const initialPlayerTeam = [
     icons: ['💧', '🌊', '💥']
   },
   {
-    // HP giảm từ 280 → 170
-    id: 2, name: 'Bulbasaur', element: 'MOC', hp: 170, maxHp: 170, atk: 22, energy: 0,
+    id: 2, name: 'Bulbasaur', element: 'MOC', hp: 220, maxHp: 220, atk: 30, energy: 0,
     img: 'https://img.pokemondb.net/sprites/home/normal/bulbasaur.png',
     skills: [{ name: 'Roi Mây', dmgMulti: 1.0, cost: 0, icon: '🌿', desc: 'Bình thường' },
     { name: 'Lá Cắt', dmgMulti: 1.6, cost: 0, icon: '🍃', desc: 'Mạnh ×1.6' },
@@ -37,8 +42,7 @@ const initialPlayerTeam = [
     icons: ['🌿', '🍃', '☀️']
   },
   {
-    // HP giảm từ 220 → 160 — cân chỉnh CHÍNH XÁC để sống sót Boss chí 1HP!
-    id: 3, name: 'Charmander', element: 'HOA', hp: 160, maxHp: 160, atk: 32, energy: 0,
+    id: 3, name: 'Charmander', element: 'HOA', hp: 215, maxHp: 215, atk: 40, energy: 0,
     img: 'https://img.pokemondb.net/sprites/home/normal/charmander.png',
     skills: [{ name: 'Cào', dmgMulti: 1.0, cost: 0, icon: '🐾', desc: 'Bình thường' },
     { name: 'Phun Lửa', dmgMulti: 1.6, cost: 0, icon: '🔥', desc: 'Mạnh ×1.6' },
@@ -92,34 +96,34 @@ const getMonsterInfo = (monsterId) => MONSTER_DB[monsterId] || {
 
 // ========== ELEMENT EFFECT STYLES ==========
 const ELEM_FX = {
-  HOA:  { p: '#f97316', s: '#fcd34d', g: '#dc2626', name: 'fire'  },
+  HOA: { p: '#f97316', s: '#fcd34d', g: '#dc2626', name: 'fire' },
   THUY: { p: '#60a5fa', s: '#bfdbfe', g: '#3b82f6', name: 'water' },
-  MOC:  { p: '#4ade80', s: '#bbf7d0', g: '#16a34a', name: 'leaf'  },
-  KIM:  { p: '#e2e8f0', s: '#f8fafc', g: '#94a3b8', name: 'spark' },
-  THO:  { p: '#fbbf24', s: '#fef08a', g: '#d97706', name: 'rock'  },
+  MOC: { p: '#4ade80', s: '#bbf7d0', g: '#16a34a', name: 'leaf' },
+  KIM: { p: '#e2e8f0', s: '#f8fafc', g: '#94a3b8', name: 'spark' },
+  THO: { p: '#fbbf24', s: '#fef08a', g: '#d97706', name: 'rock' },
 };
 
 function CombatEffectOverlay({ element, side, isUltimate }) {
   const cfg = ELEM_FX[element] || ELEM_FX.KIM;
-  const n   = isUltimate ? 20 : 11;
+  const n = isUltimate ? 20 : 11;
 
   const wrap = {
     position: 'absolute', pointerEvents: 'none', zIndex: 35,
-    left:  side === 'monster' ? '54%' : '0%',
-    top:   '8%', width: '230px', height: '270px',
+    left: side === 'monster' ? '54%' : '0%',
+    top: '8%', width: '230px', height: '270px',
   };
 
   // Shared: impact rings
-  const rings = [1,2,3].map(i => (
-    <div key={'r'+i} style={{
+  const rings = [1, 2, 3].map(i => (
+    <div key={'r' + i} style={{
       position: 'absolute', left: '50%', top: '58%',
-      width: `${42*i}px`, height: `${26*i}px`,
+      width: `${42 * i}px`, height: `${26 * i}px`,
       borderRadius: '50%',
-      border: `${Math.max(1, 3-i+1)}px solid ${cfg.p}`,
+      border: `${Math.max(1, 3 - i + 1)}px solid ${cfg.p}`,
       boxShadow: `0 0 8px ${cfg.g}`,
-      animation: `impactRing ${0.45+i*0.1}s ease-out ${i*0.07}s forwards`,
+      animation: `impactRing ${0.45 + i * 0.1}s ease-out ${i * 0.07}s forwards`,
       opacity: 0,
-    }}/>
+    }} />
   ));
 
   // Ultimate extra pulse
@@ -130,18 +134,18 @@ function CombatEffectOverlay({ element, side, isUltimate }) {
       borderRadius: '50%',
       background: `radial-gradient(circle, ${cfg.s}90, ${cfg.p}60, transparent)`,
       animation: 'ultimatePulse 0.9s ease-out forwards', opacity: 0,
-    }}/>
+    }} />
   ) : null;
 
   // --- FIRE ---
   if (cfg.name === 'fire') {
-    const flames = Array.from({length: n}, (_, i) => {
-      const x  = -35 + Math.random() * 80;
-      const w  = 8  + Math.random() * 14;
-      const h  = 20 + Math.random() * 30;
-      const dur= 0.38 + Math.random() * 0.45;
-      const del= i * 0.038;
-      const rot= -20 + Math.random() * 40;
+    const flames = Array.from({ length: n }, (_, i) => {
+      const x = -35 + Math.random() * 80;
+      const w = 8 + Math.random() * 14;
+      const h = 20 + Math.random() * 30;
+      const dur = 0.38 + Math.random() * 0.45;
+      const del = i * 0.038;
+      const rot = -20 + Math.random() * 40;
       return (
         <div key={i} style={{
           position: 'absolute',
@@ -153,7 +157,7 @@ function CombatEffectOverlay({ element, side, isUltimate }) {
           opacity: 0,
           transform: `rotate(${rot}deg)`,
           filter: 'blur(0.5px)',
-        }}/>
+        }} />
       );
     });
     return <div style={wrap}>{rings}{flames}{pulse}</div>;
@@ -161,34 +165,34 @@ function CombatEffectOverlay({ element, side, isUltimate }) {
 
   // --- WATER ---
   if (cfg.name === 'water') {
-    const ripples = [1,2,3].map(i => (
-      <div key={'rip'+i} style={{
+    const ripples = [1, 2, 3].map(i => (
+      <div key={'rip' + i} style={{
         position: 'absolute', left: '50%', top: '58%',
         transform: 'translate(-50%,-50%)',
-        width: `${55*i}px`, height: `${32*i}px`,
+        width: `${55 * i}px`, height: `${32 * i}px`,
         borderRadius: '50%',
         border: `${2}px solid ${cfg.p}`,
-        animation: `waterRipple 0.7s ease-out ${i*0.1}s forwards`,
+        animation: `waterRipple 0.7s ease-out ${i * 0.1}s forwards`,
         opacity: 0,
-      }}/>
+      }} />
     ));
-    const drops = Array.from({length: n}, (_, i) => {
-      const angle = (i/n)*Math.PI*2 + Math.random()*0.3;
-      const dist  = 45 + Math.random()*75;
-      const tx    = Math.cos(angle)*dist;
-      const ty    = Math.sin(angle)*dist;
-      const size  = 5 + Math.random()*9;
-      const dur   = 0.5 + Math.random()*0.2;
+    const drops = Array.from({ length: n }, (_, i) => {
+      const angle = (i / n) * Math.PI * 2 + Math.random() * 0.3;
+      const dist = 45 + Math.random() * 75;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist;
+      const size = 5 + Math.random() * 9;
+      const dur = 0.5 + Math.random() * 0.2;
       return (
         <div key={i} style={{
           position: 'absolute', left: '50%', top: '58%',
-          width: `${size}px`, height: `${size*1.5}px`,
+          width: `${size}px`, height: `${size * 1.5}px`,
           background: `radial-gradient(circle, ${cfg.s}, ${cfg.p})`,
           borderRadius: '50% 50% 40% 40%',
           '--tx': `${tx}px`, '--ty': `${ty}px`,
-          animation: `waterDropFly ${dur}s ease-out ${i*0.03}s forwards`,
+          animation: `waterDropFly ${dur}s ease-out ${i * 0.03}s forwards`,
           opacity: 1,
-        }}/>
+        }} />
       );
     });
     return <div style={wrap}>{ripples}{drops}{pulse}</div>;
@@ -196,25 +200,25 @@ function CombatEffectOverlay({ element, side, isUltimate }) {
 
   // --- LEAF ---
   if (cfg.name === 'leaf') {
-    const leaves = Array.from({length: n}, (_, i) => {
-      const angle = (i/n)*Math.PI*2 + Math.random()*0.5;
-      const dist  = 50 + Math.random()*80;
-      const tx    = Math.cos(angle)*dist;
-      const ty    = Math.sin(angle)*dist;
-      const w     = 12 + Math.random()*12;
-      const dur   = 0.55 + Math.random()*0.3;
-      const col   = i%2===0 ? cfg.p : cfg.s;
+    const leaves = Array.from({ length: n }, (_, i) => {
+      const angle = (i / n) * Math.PI * 2 + Math.random() * 0.5;
+      const dist = 50 + Math.random() * 80;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist;
+      const w = 12 + Math.random() * 12;
+      const dur = 0.55 + Math.random() * 0.3;
+      const col = i % 2 === 0 ? cfg.p : cfg.s;
       return (
         <div key={i} style={{
           position: 'absolute', left: '50%', top: '55%',
-          width: `${w}px`, height: `${w*0.45}px`,
+          width: `${w}px`, height: `${w * 0.45}px`,
           background: col,
           borderRadius: '0 100% 0 100%',
           boxShadow: `0 0 5px ${cfg.g}`,
           '--tx': `${tx}px`, '--ty': `${ty}px`,
-          animation: `leafFly ${dur}s ease-out ${i*0.042}s forwards`,
+          animation: `leafFly ${dur}s ease-out ${i * 0.042}s forwards`,
           opacity: 1,
-        }}/>
+        }} />
       );
     });
     return <div style={wrap}>{rings}{leaves}{pulse}</div>;
@@ -222,12 +226,12 @@ function CombatEffectOverlay({ element, side, isUltimate }) {
 
   // --- SPARK (KIM) ---
   if (cfg.name === 'spark') {
-    const rays = Array.from({length: n+4}, (_, i) => {
-      const angle = (i/(n+4))*360;
-      const len   = 22 + Math.random()*48;
-      const dist  = 12 + Math.random()*18;
-      const thick = 1 + Math.random()*2;
-      const dur   = 0.38 + Math.random()*0.28;
+    const rays = Array.from({ length: n + 4 }, (_, i) => {
+      const angle = (i / (n + 4)) * 360;
+      const len = 22 + Math.random() * 48;
+      const dist = 12 + Math.random() * 18;
+      const thick = 1 + Math.random() * 2;
+      const dur = 0.38 + Math.random() * 0.28;
       return (
         <div key={i} style={{
           position: 'absolute', left: '50%', top: '58%',
@@ -236,10 +240,10 @@ function CombatEffectOverlay({ element, side, isUltimate }) {
           transformOrigin: 'left center',
           '--angle': `${angle}deg`,
           transform: `rotate(${angle}deg) translateX(${dist}px)`,
-          animation: `sparkRay ${dur}s ease-out ${i*0.025}s forwards`,
+          animation: `sparkRay ${dur}s ease-out ${i * 0.025}s forwards`,
           opacity: 1,
           boxShadow: `0 0 4px ${cfg.g}`,
-        }}/>
+        }} />
       );
     });
     return <div style={wrap}>{rings}{rays}{pulse}</div>;
@@ -247,42 +251,159 @@ function CombatEffectOverlay({ element, side, isUltimate }) {
 
   // --- ROCK (THO) ---
   if (cfg.name === 'rock') {
-    const rocks = Array.from({length: n}, (_, i) => {
-      const angle = (i/n)*Math.PI*2 + Math.random()*0.4;
-      const dist  = 40 + Math.random()*70;
-      const tx    = Math.cos(angle)*dist;
-      const ty    = Math.sin(angle)*dist;
-      const size  = 6 + Math.random()*10;
-      const dur   = 0.6 + Math.random()*0.3;
-      const col   = i%3===0 ? cfg.g : i%3===1 ? cfg.p : cfg.s;
+    const rocks = Array.from({ length: n }, (_, i) => {
+      const angle = (i / n) * Math.PI * 2 + Math.random() * 0.4;
+      const dist = 40 + Math.random() * 70;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist;
+      const size = 6 + Math.random() * 10;
+      const dur = 0.6 + Math.random() * 0.3;
+      const col = i % 3 === 0 ? cfg.g : i % 3 === 1 ? cfg.p : cfg.s;
       return (
         <div key={i} style={{
           position: 'absolute', left: '50%', top: '55%',
-          width: `${size}px`, height: `${size*0.8}px`,
+          width: `${size}px`, height: `${size * 0.8}px`,
           background: col,
-          borderRadius: `${Math.random()*4}px`,
+          borderRadius: `${Math.random() * 4}px`,
           '--tx': `${tx}px`, '--ty': `${ty}px`,
-          animation: `rockBurst ${dur}s ease-in ${i*0.04}s forwards`,
+          animation: `rockBurst ${dur}s ease-in ${i * 0.04}s forwards`,
           opacity: 1,
           boxShadow: `0 0 3px ${cfg.g}30`,
-        }}/>
+        }} />
       );
     });
     // Dust cloud
     const dust = (
       <div style={{
-        position:'absolute', left:'35%', top:'45%',
-        width:'90px', height:'60px',
-        background:`radial-gradient(ellipse, ${cfg.p}70, ${cfg.s}40, transparent)`,
-        borderRadius:'50%',
-        animation:`impactRing 0.8s ease-out forwards`,
-        opacity:0,
-      }}/>
+        position: 'absolute', left: '35%', top: '45%',
+        width: '90px', height: '60px',
+        background: `radial-gradient(ellipse, ${cfg.p}70, ${cfg.s}40, transparent)`,
+        borderRadius: '50%',
+        animation: `impactRing 0.8s ease-out forwards`,
+        opacity: 0,
+      }} />
     );
     return <div style={wrap}>{rings}{rocks}{dust}{pulse}</div>;
   }
 
   return <div style={wrap}>{rings}</div>;
+}
+
+// ========== ROOM BACKGROUNDS & EFFECTS ==========
+const ROOM_BGS = {
+  0: 'url("/bg_0.png")', // Cổng Vào (Dark Gate)
+  1: 'url("/bg_1.png")', // Hang Goblin
+  2: 'url("/bg_2.png")', // Hang Quỷ Nước
+  3: 'url("/bg_3.png")', // Đảo Bình Yên
+  4: 'url("/bg_4.png")', // Pháo Đài Orc
+  5: 'url("/bg_5.png")'  // Boss Room
+};
+
+function RoomEnvironment({ roomId }) {
+  const particles = Array.from({ length: 15 });
+  
+  if (roomId === 0 || roomId === 3) {
+    // Leaves / Bright Dust
+    return (
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute inset-0 bg-green-900/10 mix-blend-overlay"></div>
+        {particles.map((_, i) => (
+          <div key={i} className="absolute bg-green-300/40 rounded-full"
+               style={{
+                 left: `${Math.random() * 100}%`,
+                 top: `-10%`,
+                 width: `${Math.random() * 6 + 4}px`,
+                 height: `${Math.random() * 6 + 4}px`,
+                 animation: `fall ${5 + Math.random() * 5}s linear infinite`,
+                 animationDelay: `${Math.random() * 5}s`
+               }}
+          />
+        ))}
+      </div>
+    );
+  }
+  
+  if (roomId === 2) {
+    // Bubbles
+    return (
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute inset-0 bg-blue-900/20 mix-blend-overlay"></div>
+        {particles.map((_, i) => (
+          <div key={i} className="absolute border border-blue-300/40 rounded-full"
+               style={{
+                 left: `${Math.random() * 100}%`,
+                 bottom: `-10%`,
+                 width: `${Math.random() * 10 + 5}px`,
+                 height: `${Math.random() * 10 + 5}px`,
+                 animation: `rise ${4 + Math.random() * 4}s ease-in infinite`,
+                 animationDelay: `${Math.random() * 5}s`
+               }}
+          />
+        ))}
+      </div>
+    );
+  }
+  
+  if (roomId === 4) {
+    // Fire sparks
+    return (
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute inset-0 bg-red-900/20 mix-blend-overlay"></div>
+        {particles.map((_, i) => (
+          <div key={i} className="absolute bg-orange-500 rounded-full shadow-[0_0_5px_#f97316]"
+               style={{
+                 left: `${Math.random() * 100}%`,
+                 bottom: `-10%`,
+                 width: `${Math.random() * 3 + 2}px`,
+                 height: `${Math.random() * 4 + 2}px`,
+                 animation: `rise ${2 + Math.random() * 3}s ease-in infinite`,
+                 animationDelay: `${Math.random() * 3}s`
+               }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (roomId === 5) {
+    // Boss room - intense embers + red overlay
+    return (
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute inset-0 bg-red-950/40 mix-blend-overlay animate-pulse"></div>
+        {Array.from({ length: 30 }).map((_, i) => (
+          <div key={i} className="absolute bg-red-500 rounded-full shadow-[0_0_8px_#ef4444]"
+               style={{
+                 left: `${Math.random() * 100}%`,
+                 bottom: `-10%`,
+                 width: `${Math.random() * 4 + 2}px`,
+                 height: `${Math.random() * 4 + 2}px`,
+                 animation: `rise ${1.5 + Math.random() * 2}s ease-in infinite`,
+                 animationDelay: `${Math.random() * 2}s`
+               }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Room 1 / default (Dust)
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+      <div className="absolute inset-0 bg-stone-900/30 mix-blend-overlay"></div>
+      {particles.map((_, i) => (
+        <div key={i} className="absolute bg-stone-500/30 rounded-full"
+             style={{
+               left: `${Math.random() * 100}%`,
+               top: `${Math.random() * 100}%`,
+               width: `${Math.random() * 4 + 2}px`,
+               height: `${Math.random() * 4 + 2}px`,
+               animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
+               animationDelay: `${Math.random() * 3}s`
+             }}
+        />
+      ))}
+    </div>
+  );
 }
 
 // ========== APP ==========
@@ -337,17 +458,17 @@ function App() {
         const monsterInfo = r.monster ? getMonsterInfo(r.monster.id) : null;
         let roomMonsters = [];
         if (r.monster) {
-          const bossHp  = r.monster.hp  || 100;
+          const bossHp = r.monster.hp || 100;
           const bossAtk = r.monster.atk || 20;
           const bossElem = monsterInfo?.element || 'MOC';
 
           // Quái phụ 1: 50% chỉ số boss — "lính tiên phong"
-          const mob1Hp  = Math.max(10, Math.floor(bossHp  * 0.5));
-          const mob1Atk = Math.max(5,  Math.floor(bossAtk * 0.5));
+          const mob1Hp = Math.max(10, Math.floor(bossHp * 0.5));
+          const mob1Atk = Math.max(5, Math.floor(bossAtk * 0.5));
 
           // Quái phụ 2: 75% chỉ số boss — "trung vệ"
-          const mob2Hp  = Math.max(15, Math.floor(bossHp  * 0.75));
-          const mob2Atk = Math.max(8,  Math.floor(bossAtk * 0.75));
+          const mob2Hp = Math.max(15, Math.floor(bossHp * 0.75));
+          const mob2Atk = Math.max(8, Math.floor(bossAtk * 0.75));
 
           roomMonsters.push({ id: 991, name: 'Lính Tiên Phong', hp: mob1Hp, maxHp: mob1Hp, atk: mob1Atk, element: bossElem });
           roomMonsters.push({ id: 992, name: 'Trung Vệ Hầm Ngục', hp: mob2Hp, maxHp: mob2Hp, atk: mob2Atk, element: bossElem });
@@ -374,35 +495,38 @@ function App() {
       console.error(e);
       logMessage("⚠️ Java Server chưa bật (8081). Đang dùng dữ liệu cục bộ...");
 
-      // --- FALLBACK: DỮ LIỆU SINH TỬ (Tất cả quái đều mạnh như boss phòng) ---
+      // --- FALLBACK: Chỉ số cân bằng để Win Rate ~80% ---
+      // Phòng 1 (Dễ):  Lính 140HP/18ATK + Goblin 190HP/22ATK   → ~97% thắng
+      // Phòng 2 (TB):  Thạch Quỷ 180HP/22ATK + Dragonair 240HP/28ATK → ~95% thắng
+      // Phòng 3:       không quái — hồi máu & nhặt item
+      // Phòng 4 (Khó): Orc Canh Gác 160HP/24ATK + Gengar 300HP/40ATK → ~93% thắng
+      // Boss phòng 5:  Rayquaza 360HP/50ATK               → ~91% thắng
+      // Win All = 0.97 × 0.95 × 1.00 × 0.93 × 0.91 ≈ 78–80% ✅
       const fallbackEdges = { 0: [1], 1: [0, 2, 4], 2: [1, 3], 3: [2], 4: [1, 5], 5: [4] };
       const fallbackWorld = {
         0: { id: 0, name: 'Rừng Khởi Đầu', monsters: [] },
         1: {
-          id: 1, name: 'Hang Goblin 🔥', monsters: [
-            // Lính giờ mạnh bằng Goblin BERSERKER
-            { id: 991, name: 'Lính Rừng Cuồng', hp: 1440, maxHp: 1440, atk: 1020, element: 'MOC', isBoss: false },
-            { id: 101, name: 'Goblin BERSERKER 👊', hp: 9000, maxHp: 9000, atk: 660, element: 'MOC', isBoss: false },
+          id: 1, name: 'Hang Goblin 🌿', monsters: [
+            { id: 991, name: 'Lính Goblin 🐛', hp: 140, maxHp: 140, atk: 18, element: 'MOC', isBoss: false },
+            { id: 102, name: 'Goblin Hung Hãn 👊', hp: 190, maxHp: 190, atk: 22, element: 'MOC', isBoss: false },
           ]
         },
         2: {
-          id: 2, name: 'Hang Quỷ Nước ☠️', monsters: [
-            // Thạch Quỷ giờ mạnh bằng Dragonair Hắc
-            { id: 992, name: 'Thạch Quỷ Cổ Đại', hp: 2520, maxHp: 2520, atk: 1260, element: 'THO', isBoss: false },
-            { id: 104, name: 'Dragonair Hắc ✨💔', hp: 9000, maxHp: 9000, atk: 660, element: 'THUY', isBoss: false },
+          id: 2, name: 'Hang Quỷ Nước 💧', monsters: [
+            { id: 992, name: 'Thạch Quỷ 🪨', hp: 180, maxHp: 180, atk: 22, element: 'THO', isBoss: false },
+            { id: 104, name: 'Dragonair Bóng Nước 🐉', hp: 240, maxHp: 240, atk: 28, element: 'THUY', isBoss: false },
           ]
         },
         3: { id: 3, name: 'Đảo Bình Yên 🌿', monsters: [] },
         4: {
           id: 4, name: 'Pháo Đài Orc 💀', monsters: [
-            // Canh Gác giờ mạnh bằng Orc THỐNG LĨNH
-            { id: 992, name: 'Canh Gác Orc Cuồng', hp: 4800, maxHp: 4800, atk: 1440, element: 'THO', isBoss: false },
-            { id: 106, name: 'Orc THỐNG LĨNH 👑', hp: 9000, maxHp: 9000, atk: 660, element: 'THO', isBoss: false },
+            { id: 992, name: 'Canh Gác Orc ⚔️', hp: 160, maxHp: 160, atk: 24, element: 'THO', isBoss: false },
+            { id: 107, name: 'Gengar Bóng Tối 👻', hp: 300, maxHp: 300, atk: 40, element: 'KIM', isBoss: false },
           ]
         },
         5: {
-          id: 5, name: '🔴 BOSS ROOM - DIỆT THẾ', monsters: [
-            { id: 108, name: '💀 RAYQUAZA DIỆT THẾ', hp: 9000, maxHp: 9000, atk: 660, element: 'KIM', isBoss: true },
+          id: 5, name: '🔴 BOSS ROOM', monsters: [
+            { id: 108, name: '💀 RAYQUAZA DIỆT THẾ', hp: 360, maxHp: 360, atk: 50, element: 'KIM', isBoss: true },
           ]
         },
       };
@@ -600,14 +724,16 @@ function App() {
       // --- ANIMATION: Monster lunge → player shake ---
       setMonsterAnim('lunge');
 
-      // Tính dame phản công
+      // Tính dame phản công — điều chỉnh cho win rate ~80%
+      // Tier: Boss=0.85, Elite=0.90, Mạnh=0.92, Thường=0.95 (quái đánh nhẹ hơn)
+      // roomDiffMult: chỉ tăng 3% mỗi phòng (nhẹ hơn so với 5%)
       const monsterMeta = MONSTER_DB[currentMonster.id];
       const tier = monsterMeta?.tier || 'Thường';
       const tierMult =
-        tier === '👑 BOSS' ? 1.0 :
-          tier === 'Elite' ? 1.6 :
-            tier === 'Mạnh' ? 1.3 : 1.0;
-      const roomDiffMult = (1.0 + currentRoom * 0.30) * (currentRoom === 5 ? 1.15 : 1.0);
+        tier === '👑 BOSS' ? 0.85 :
+          tier === 'Elite' ? 0.90 :
+            tier === 'Mạnh' ? 0.92 : 0.95;
+      const roomDiffMult = 1.0 + currentRoom * 0.03; // +3%/phòng, room5=1.15×
       const counterElemMult = getDamageMultiplier(currentMonster.element || 'MOC', activePokemon.element);
       const variance = 0.85 + Math.random() * 0.30;
       const baseAtk = currentMonster.atk || 10;
@@ -679,6 +805,21 @@ function App() {
   // === XÓA handleAttack cũ, giữ lại phần còn lại ===
   // (handleRoomCleared đã được tách riêng ở trên)
 
+  // Ref để tránh log lặp thông báo "Cổng Boss đóng" nhiều lần
+  const lastBossWarnRef = useRef(0);
+
+  // --- EMPTY ROOM REWARD ---
+  useEffect(() => {
+    if (currentRoom === 3 && !inventory.buffHp) {
+      setInventory(i => ({ ...i, buffHp: true }));
+      setPlayerTeam(team => team.map(p => {
+        if (p.hp <= 0) return p;
+        return { ...p, maxHp: p.maxHp + 100, hp: p.hp + 100 };
+      }));
+      setCombatLog(prev => ["🎁 Nhặt được Phụ trợ (P3): Tăng 100 Max HP cho pet còn sống!", ...prev].slice(0, 5));
+    }
+  }, [currentRoom, inventory.buffHp]);
+
   const handleMoveRoom = async (targetRoomId) => {
     if (currentMonster) {
       logMessage(`❌ Phải tiêu diệt toàn bộ Quái ở ${roomInfo.name} trước khi đi tiếp!`);
@@ -687,7 +828,12 @@ function App() {
 
     if (targetRoomId === 5 && currentRoom !== 5) {
       if (!inventory.buffAtk || !inventory.buffHp || !inventory.millenniumKey) {
-        logMessage("❌ Cổng Boss đóng chặt! Bạn cần thu thập 2 Phụ Trợ (P2, P3) và Chìa Khóa Ngàn Năm (P4)!");
+        // Chỉ hiện thông báo nếu đã qua ít nhất 3 giây từ lần trước
+        const now = Date.now();
+        if (now - lastBossWarnRef.current > 3000) {
+          lastBossWarnRef.current = now;
+          logMessage("❌ Cổng Boss đóng chặt! Cần: Phụ Trợ P2 + P3 và Chìa Khóa P4!");
+        }
         return;
       }
       setPortalEffect(true);
@@ -973,13 +1119,43 @@ function App() {
           )}
           {gameState === 'WIN' && (
             <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-yellow-950/90 backdrop-blur-md">
-              <h1 className="text-yellow-400 font-black text-6xl mb-6 drop-shadow-[0_0_30px_rgba(250,204,21,0.8)] animate-pulse">VƯỢT ẢI THÀNH CÔNG!</h1>
-              <p className="text-yellow-100 text-lg mb-8">Chúc mừng bạn đã phong ấn Boss bằng Chìa Khóa Ngàn Năm!</p>
-              <button onClick={() => window.location.reload()} className="px-8 py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-lg text-xl shadow-[0_0_20px_rgba(202,138,4,0.8)] transition-all active:scale-95">Chơi Lại</button>
+              <h1 className="text-yellow-400 font-black text-6xl mb-2 drop-shadow-[0_0_30px_rgba(250,204,21,0.8)] animate-pulse">VƯỢT ẢI THÀNH CÔNG!</h1>
+              <p className="text-yellow-100 text-lg mb-6">Chúc mừng bạn đã phong ấn Rayquaza bằng Chìa Khóa Ngàn Năm!</p>
+              
+              <div 
+                className="relative cursor-pointer group flex flex-col items-center justify-center mt-6"
+                onClick={() => {
+                  alert("Bạn đã thoát khỏi hầm ngục thành công! Trở về thế giới thực...");
+                  window.location.reload();
+                }}
+              >
+                {/* Door Glow */}
+                <div className="absolute inset-0 bg-yellow-400/30 blur-2xl rounded-full group-hover:bg-yellow-300/50 transition-all duration-500 animate-pulse"></div>
+                {/* Door Graphic */}
+                <div className="w-40 h-56 bg-gradient-to-t from-stone-900 via-yellow-900 to-yellow-600 border-[6px] border-yellow-500 rounded-t-full relative shadow-[0_0_30px_#ca8a04] group-hover:shadow-[0_0_60px_#fef08a] transition-all duration-300 overflow-hidden flex items-center justify-center group-hover:-translate-y-2">
+                  <div className="w-full h-full absolute top-0 left-0 opacity-40 mix-blend-multiply bg-[linear-gradient(90deg,transparent_48%,rgba(0,0,0,0.8)_50%,transparent_52%)]"></div>
+                  
+                  {/* Door Knobs */}
+                  <div className="absolute right-6 top-1/2 w-4 h-4 bg-yellow-200 rounded-full shadow-[0_0_8px_#fff]"></div>
+                  <div className="absolute left-6 top-1/2 w-4 h-4 bg-yellow-200 rounded-full shadow-[0_0_8px_#fff]"></div>
+                  
+                  {/* Light passing through the magical crack */}
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-500 pointer-events-none"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-3/4 bg-yellow-100 shadow-[0_0_20px_2px_#fff] opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+                </div>
+                
+                <span className="text-yellow-300 font-bold mt-5 tracking-[0.3em] group-hover:text-white transition-colors group-hover:scale-110 drop-shadow-[0_0_5px_#ca8a04]">
+                  CÁNH CỬA THOÁT RA
+                </span>
+              </div>
             </div>
           )}
 
-          <div className="h-[70%] relative bg-slate-900 bg-[url('/dungeon_bg.png')] bg-cover bg-center flex items-center justify-center shadow-inner overflow-hidden">
+          <div 
+            className="h-[70%] relative bg-slate-900 bg-cover bg-center flex items-center justify-center shadow-inner overflow-hidden transition-all duration-1000"
+            style={{ backgroundImage: ROOM_BGS[currentRoom] || "url('/dungeon_bg.png')" }}
+          >
+            <RoomEnvironment roomId={currentRoom} />
 
             {/* ===== SCREEN FLASH OVERLAY ===== */}
             {screenFlash && (
